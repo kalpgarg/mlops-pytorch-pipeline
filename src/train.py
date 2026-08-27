@@ -1,13 +1,13 @@
 import json
-import sys
 from pathlib import Path
 
 import torch
-import torch.nn as nn
 import yaml
+from torch import nn
 
 from dataset import get_dataloaders
 from model import get_model
+from utils import MetricsLogger, get_device
 
 
 def load_config(config_path: str) -> dict:
@@ -79,7 +79,8 @@ def main():
 
     config = load_config(str(config_path))
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device(get_device())
+    print(json.dumps({"event": "device_selected", "device": str(device)}), flush=True)
 
     model = get_model(
         architecture=config["model"]["architecture"],
@@ -97,12 +98,20 @@ def main():
     )
     criterion = nn.CrossEntropyLoss()
 
+    scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        optimizer, mode="min", factor=0.5, patience=2, verbose=False
+    )
+
     best_val_loss = float("inf")
+    best_val_acc = 0.0
     patience_counter = 0
     patience = config["training"]["early_stopping_patience"]
 
     checkpoint_dir = Path(config["output"]["checkpoint_dir"])
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
+    log_dir = config.get("output", {}).get("log_dir", "logs")
+    logger = MetricsLogger(log_dir=log_dir, experiment_name="cifar10_training")
 
     for epoch in range(config["training"]["epochs"]):
         train_loss, train_acc = train_one_epoch(
@@ -110,17 +119,31 @@ def main():
         )
         val_loss, val_acc = evaluate(model, val_loader, criterion, device)
 
+        current_lr = optimizer.param_groups[0]["lr"]
+        logger.log_epoch(
+            epoch=epoch + 1,
+            train_loss=train_loss,
+            train_acc=train_acc,
+            val_loss=val_loss,
+            val_acc=val_acc,
+            lr=current_lr,
+        )
+
         log_entry = {
             "epoch": epoch + 1,
             "train_loss": round(train_loss, 4),
             "train_accuracy": round(train_acc, 4),
             "val_loss": round(val_loss, 4),
             "val_accuracy": round(val_acc, 4),
+            "lr": current_lr,
         }
         print(json.dumps(log_entry), flush=True)
 
+        scheduler.step(val_loss)
+
         if val_loss < best_val_loss:
             best_val_loss = val_loss
+            best_val_acc = val_acc
             patience_counter = 0
             save_path = checkpoint_dir / config["output"]["model_name"]
             torch.save(
@@ -146,9 +169,19 @@ def main():
                 )
                 break
 
+    logger.save_summary(
+        best_val_loss=best_val_loss,
+        best_val_acc=best_val_acc,
+        total_epochs=epoch + 1,
+    )
+
     print(
         json.dumps(
-            {"event": "training_complete", "best_val_loss": round(best_val_loss, 4)}
+            {
+                "event": "training_complete",
+                "best_val_loss": round(best_val_loss, 4),
+                "best_val_accuracy": round(best_val_acc, 4),
+            }
         ),
         flush=True,
     )
