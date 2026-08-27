@@ -1,6 +1,10 @@
 # Stage 1: Base with dependencies
 FROM python:3.11-slim AS base
 WORKDIR /app
+
+LABEL maintainer="mlops-team"
+LABEL component="training"
+
 COPY requirements/train.txt .
 RUN pip install --no-cache-dir -r train.txt
 
@@ -8,5 +12,9 @@ RUN pip install --no-cache-dir -r train.txt
 FROM base AS training
 COPY src/ ./src/
 COPY configs/ ./configs/
+
+RUN mkdir -p /app/data /app/checkpoints /app/logs
+
 ENV PYTHONUNBUFFERED=1
+
 ENTRYPOINT ["python", "src/train.py"]

@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  train:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.train
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./logs:/app/logs
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  serve:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.serve
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./checkpoints:/app/checkpoints
+    environment:
+      - MODEL_CHECKPOINT_PATH=/app/checkpoints/classifier_v1.pt
+    depends_on:
+      train:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
