@@ -19,3 +19,4 @@ data:
     output:
       checkpoint_dir: /app/checkpoints
       model_name: classifier_v1.pt
+      log_dir: /app/logs
