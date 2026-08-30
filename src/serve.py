@@ -1,6 +1,9 @@
 import io
 import os
+import sys
 from pathlib import Path
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__)))
 
 import torch
 import torch.nn.functional as F
