@@ -12,9 +12,10 @@ venv/
 env/
 .venv/
 
-# Data and checkpoints
+# Data, checkpoints, and logs
 data/
 checkpoints/
+logs/
 *.pt
 *.pth
 
