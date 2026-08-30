@@ -14,6 +14,7 @@ spec:
       containers:
         - name: training
           image: mlops-train:v1
+          imagePullPolicy: Never
           resources:
             requests:
               cpu: "2"

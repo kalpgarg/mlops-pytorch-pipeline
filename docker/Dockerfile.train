@@ -8,6 +8,9 @@ LABEL component="training"
 COPY requirements/train.txt .
 RUN pip install --no-cache-dir -r train.txt
 
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
+
 # Stage 2: Training runtime
 FROM base AS training
 COPY src/ ./src/

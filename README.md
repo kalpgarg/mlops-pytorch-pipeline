@@ -144,7 +144,18 @@ curl -X POST http://localhost:8080/predict -F "image=@test_image.png"
 
 ## Model
 
-- **Architecture:** ResNet-18 (adapted for CIFAR-10 32x32 images)
+- **Architecture:** SimpleCNN (3-layer CNN, ~62K params) — lightweight, trains fast on CPU. ResNet-18 also available via config.
 - **Dataset:** CIFAR-10 (10 classes)
-- **Training:** Adam optimizer, CrossEntropy loss, early stopping
+- **Training:** Adam optimizer, CrossEntropy loss, ReduceLROnPlateau scheduler, early stopping
 - **Serving:** FastAPI with POST /predict and GET /health endpoints
+- **Metrics logging:** CSV + JSON experiment tracking via MetricsLogger
+
+## Training Results
+
+| Epoch | Train Loss | Train Acc | Val Loss | Val Acc |
+|-------|-----------|-----------|----------|---------|
+| 1     | 1.4822    | 45.37%    | 1.1506   | 58.19%  |
+| 2     | 1.1437    | 59.10%    | 1.0006   | 64.81%  |
+| 3     | 1.0303    | 63.30%    | 0.8897   | 69.10%  |
+| 4     | 0.9509    | 66.49%    | 0.8027   | 71.65%  |
+| 5     | 0.9009    | 68.04%    | 0.7486   | 73.55%  |

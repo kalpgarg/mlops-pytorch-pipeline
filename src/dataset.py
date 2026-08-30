@@ -1,6 +1,10 @@
-import torch
+import ssl
+
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
+
+# Fix SSL certificate verification in containerized environments
+ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def get_transforms(train: bool = True) -> transforms.Compose:
