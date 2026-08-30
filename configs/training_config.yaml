@@ -1,9 +1,9 @@
 model:
-  architecture: resnet18
+  architecture: simplecnn
   num_classes: 10
 
 training:
-  epochs: 10
+  epochs: 5
   batch_size: 64
   learning_rate: 0.001
   early_stopping_patience: 3

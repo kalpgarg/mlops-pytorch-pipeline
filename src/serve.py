@@ -45,7 +45,7 @@ def load_model():
         return
 
     checkpoint = torch.load(checkpoint_path, map_location=device)
-    model = get_model(architecture="resnet18", num_classes=10).to(device)
+    model = get_model(architecture="simplecnn", num_classes=10).to(device)
     model.load_state_dict(checkpoint["model_state_dict"])
     model.eval()
     print(f"Model loaded from {checkpoint_path}")
