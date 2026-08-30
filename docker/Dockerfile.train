@@ -5,10 +5,6 @@ WORKDIR /app
 LABEL maintainer="mlops-team"
 LABEL component="training"
 
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
-    && rm -rf /var/lib/apt/lists/* \
-    && update-ca-certificates
-
 COPY requirements/train.txt .
 RUN pip install --no-cache-dir -r train.txt
 
