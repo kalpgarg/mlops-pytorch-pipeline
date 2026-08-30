@@ -14,15 +14,14 @@ spec:
       containers:
         - name: training
           image: mlops-train:v1
+          imagePullPolicy: Never
           resources:
             requests:
-              cpu: "2"
-              memory: "4Gi"
+              cpu: "1"
+              memory: "2Gi"
             limits:
               cpu: "2"
               memory: "4Gi"
-              # Bonus: GPU resource request
-              nvidia.com/gpu: "1"
           volumeMounts:
             - name: training-config
               mountPath: /app/configs
@@ -30,20 +29,11 @@ spec:
               mountPath: /app/data
             - name: checkpoint-volume
               mountPath: /app/checkpoints
-      # Bonus: GPU node selector
-      tolerations:
-        - key: "nvidia.com/gpu"
-          operator: "Exists"
-          effect: "NoSchedule"
-      nodeSelector:
-        accelerator: nvidia-gpu
       volumes:
         - name: training-config
           configMap:
             name: training-config
         - name: data-volume
-          persistentVolumeClaim:
-            claimName: training-data-pvc
+          emptyDir: {}
         - name: checkpoint-volume
-          persistentVolumeClaim:
-            claimName: checkpoint-pvc
+          emptyDir: {}

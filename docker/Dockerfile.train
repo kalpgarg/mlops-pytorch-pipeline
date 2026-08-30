@@ -5,8 +5,15 @@ WORKDIR /app
 LABEL maintainer="mlops-team"
 LABEL component="training"
 
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
+
 COPY requirements/train.txt .
 RUN pip install --no-cache-dir -r train.txt
+
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+ENV REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt
 
 # Stage 2: Training runtime
 FROM base AS training
